@@ -1,30 +1,35 @@
-"""
-A module that replace the built-ins warning module wit a more flexible interface. 
+""" A module that replace the built-ins warning module wit a more flexible
+interface.
 
 """
 
 import warnings
+import sys
+import re
 
 from warnings import (_is_internal_frame, _next_external_frame,
-    _filters_mutated, showwarning, defaultaction, onceregistry)
+                      _filters_mutated, showwarning, defaultaction,
+                      onceregistry)
 
 wfmu = _filters_mutated
 
 warnings._filters_version = 1
 
+
 def _filters_mutated():
     warnings._filters_version += 1
-    
+
 warnings._filters_mutated = _filters_mutated
 
 
 def new_warn_explicit(message, category, filename, lineno,
-                  module=None, registry=None, module_globals=None, emit_module=None):
+                      module=None, registry=None, module_globals=None,
+                      emit_module=None):
     lineno = int(lineno)
     if module is None:
         module = filename or "<unknown>"
         if module[-3:].lower() == ".py":
-            module = module[:-3] # XXX What about leading pathname?
+            module = module[:-3]  # XXX What about leading pathname?
     if registry is None:
         registry = {}
     if registry.get('version', 0) != warnings._filters_version:
@@ -42,16 +47,17 @@ def new_warn_explicit(message, category, filename, lineno,
         return
     # Search the filters
     for item in warnings.filters:
+        item = _get_proxy_filter(item)
         if len(item) == 5:
             action, msg, cat, mod, ln = item
             emod = None
         else:
-            action, msg, cat, mod, ln, emod= item
+            action, msg, cat, mod, ln, emod = item
         if ((msg is None or msg.match(text)) and
-            issubclass(category, cat) and
-            (mod is None or mod.match(module)) and
-            (emod is None or emod.match(emit_module)) and
-            (ln == 0 or lineno == ln)):
+           issubclass(category, cat) and
+           (mod is None or mod.match(module)) and
+           (emod is None or emod.match(emit_module)) and
+           (ln == 0 or lineno == ln)):
             break
     else:
         action = defaultaction
@@ -84,11 +90,13 @@ def new_warn_explicit(message, category, filename, lineno,
         registry[altkey] = 1
     elif action == "default":
         registry[key] = 1
+    elif action == "custom":
+        pass
     else:
         # Unrecognized actions are errors
         raise RuntimeError(
-              "Unrecognized action (%r) in warnings.filters:\n %s" %
-              (action, item))
+            "Unrecognized action (%r) in warnings.filters:\n %s" %
+            (action, item))
     if not callable(showwarning):
         raise TypeError("warnings.showwarning() must be set to a "
                         "function or method")
@@ -96,9 +104,8 @@ def new_warn_explicit(message, category, filename, lineno,
     showwarning(message, category, filename, lineno)
 
 
-import sys
 def _get_stack_frame(stacklevel):
-    stacklevel = stacklevel +1
+    stacklevel = stacklevel + 1
     if stacklevel <= 1 or _is_internal_frame(sys._getframe(1)):
         # If frame is too small to care or if the warning originated in
         # internal code, then do not try to hide any frames.
@@ -111,10 +118,12 @@ def _get_stack_frame(stacklevel):
             if frame is None:
                 raise ValueError
     return frame
+
+
 def new_warn(message, category=None, stacklevel=1, emitstacklevel=1):
     """Issue a warning, or maybe ignore it or raise an exception."""
     # Check if message is already a Warning object
-    
+
     ####################
     ### Get category ###
     ####################
@@ -135,7 +144,7 @@ def new_warn(message, category=None, stacklevel=1, emitstacklevel=1):
     else:
         globals = frame.f_globals
         lineno = frame.f_lineno
-        
+
     try:
         eframe = _get_stack_frame(emitstacklevel)
     except ValueError:
@@ -146,7 +155,7 @@ def new_warn(message, category=None, stacklevel=1, emitstacklevel=1):
         emodule = eglobals['__name__']
     else:
         emodule = "<string>"
-        
+
     ####################
     ### Get Filename ###
     ####################
@@ -175,6 +184,29 @@ def new_warn(message, category=None, stacklevel=1, emitstacklevel=1):
     new_warn_explicit(message, category, filename, lineno, module, registry,
                   globals, emit_module=emodule)
 
+_proxy_map = {}
+re_matchall = re.compile('', re.I)
+class ProxyWarning(Warning): pass  # NOQA
+
+def _set_proxy_filter(warningstuple):
+    """set up a proxy that store too long warnings in a separate map"""
+
+    if len(warningstuple) > 5:
+        key = len(_proxy_map)+1
+        _proxy_map[key] = warningstuple
+        return ('custom', re_matchall, ProxyWarning, re_matchall, key)
+    else:
+        return warningstuple
+
+def _get_proxy_filter(warningstuple):
+    """set up a proxy that store too long warnings in a separate map"""
+    if warningstuple[2] == ProxyWarning:
+        return _proxy_map[warningstuple[4]]
+    else:
+        return warningstuple
+
+
+
 
 def newfilterwarnings(action, message="", category=Warning, module="", lineno=0,
                    append=False, emodule=""):
@@ -188,7 +220,6 @@ def newfilterwarnings(action, message="", category=Warning, module="", lineno=0,
     'lineno' -- an integer line number, 0 matches all warnings
     'append' -- if true, append to the list of filters
     """
-    import re
     assert action in ("error", "ignore", "always", "default", "module",
                       "once"), "invalid action: %r" % (action,)
     assert isinstance(message, str), "message must be a string"
@@ -196,18 +227,47 @@ def newfilterwarnings(action, message="", category=Warning, module="", lineno=0,
     assert issubclass(category, Warning), "category must be a Warning subclass"
     assert isinstance(module, str), "module must be a string"
     assert isinstance(lineno, int) and lineno >= 0, \
-           "lineno must be an int >= 0"
+        "lineno must be an int >= 0"
     if emodule:
         item = (action, re.compile(message, re.I), category,
-            re.compile(module), lineno, re.compile(emodule))
+            re.compile(module), lineno, re.compile(emodule, ))
     else:
         item = (action, re.compile(message, re.I), category,
             re.compile(module), lineno)
     if append:
-        warnings.filters.append(item)
+        warnings.filters.append(_set_proxy_filter(item))
     else:
-        warnings.filters.insert(0, item)
+        warnings.filters.insert(0, _set_proxy_filter(item))
     warnings._filters_mutated()
-warnings.warn_explicit = new_warn_explicit
-warnings.warn = new_warn
-warnings.filterwarnings = newfilterwarnings
+
+
+
+class Patch:
+
+    def __init__(self):
+        self._enter = 0
+
+    def __call__(self):
+        if not self._enter:
+            self._warn_explit = warnings.warn_explicit
+            self._warn = warnings.warn
+            self._filterwarnings = warnings.filterwarnings
+
+            warnings.warn_explicit = new_warn_explicit
+            warnings.warn = new_warn
+            warnings.filterwarnings = newfilterwarnings
+        self._enter += 1
+
+    def __enter__(self):
+        return self.__call__()
+
+    def __exit__(self):
+        self._enter -= 1
+        if self._enter:
+            return
+        else:
+            pass
+            # restore original stat
+
+
+patch = Patch()

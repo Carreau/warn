@@ -1,4 +1,8 @@
-import warnings
+from warnings import warn
+
 def foo():
-    warnings.warn("This is FOO", DeprecationWarning, stacklevel=2)
+    warn("This is FOO", DeprecationWarning, stacklevel=2)
+
+def bar():
+    foo()
     
