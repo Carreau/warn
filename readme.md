@@ -62,7 +62,7 @@ def _deprecated_function(param1, deprecated_parameter):
             stacklevel=3)
 ```
 
-```
+```python
 # file caller.py
 from emitter import public_api
 public_api(1, True)  # warning triggered here.
@@ -150,7 +150,7 @@ A good warning and in particular Deprecation warning
 is extremely helpful and can make the difference for the adoption of an API.
 Take the following fiction example:
 
-
+```python
 >>> import warnings
 
 >>> warnings.simplefilter('default')
@@ -166,6 +166,7 @@ DeprecationWarning: The 'constribule(message, recipient_id)' function of the
                     'quezetraste' package is deprecated since version 7.3. It
                     haz been replaced by 'Recipient(id).send(message)' which
                     was available since 7.2. See http://url.to/documentation/#1337
+```
 
 
 ## Turn the DeprecationWarnings into error in your test-suite!
