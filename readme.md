@@ -22,8 +22,16 @@ patch()
 ```
 
 Though the `warnings.filterwarning` function has now gained the `emodule`
-keyword parameter, see below for explanation.
+keyword parameter to filer by the module that emitted the warning; example:
 
+```
+import warnings
+warnings.filter('default', category=DeprecationWarnings, emodule='matplotlib\.pyplot.*')
+```
+
+All warnings from `matplotlib.pyplot` and its submodule will now be show by
+default, regardless of whether you trigger them directly, via pandas, seaborn,
+your own code...
 
 ## Warning emitter, warning caller. 
 
@@ -114,18 +122,19 @@ TODO. You should be able to use that in your own library without using `patch()`
 ## Availability on Python 2
 
 I don't know if if works on Python 2; I don't really have the time to
-investigate; I don't particularly care a lot; but feel free
+investigate; I don't particularly care a lot; but feel free to send a PR that
+ads support if necessary.
 
 
 ## limitations
 
 This does not work on packages that either :
 
-- got and keep a reference on `warnings.warn` before `patch()` have been
+- Got and keep a reference on `warnings.warn` before `patch()` have been
   called; that is to say things of the form: `from warnings iport warn`
 
-- cannot work on C-extensions (aka won't filter on `numpy`) ; Both of the above
-  are technically possible with Assembly Patching which I'm not confortabl
+- Cannot work on C-extensions (aka won't filter on `numpy`) ; Both of the above
+  are technically possible with Assembly Patching which I'm not confortable
   with.
 
 ## The Ugly
