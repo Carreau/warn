@@ -1,13 +1,11 @@
 language: python
 python:
   - 'nightly'
-  - '3.3'
-  - '3.4'
   - '3.5'
   - pypy
 
 install: 
-   - pip install doctr
+   - pip install doctr sphinx
 script:
     - cd docs
     - make html
