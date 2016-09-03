@@ -200,7 +200,7 @@ def _set_proxy_filter(warningstuple):
 
 def _get_proxy_filter(warningstuple):
     """set up a proxy that store too long warnings in a separate map"""
-    if warningstuple[2] == ProxyWarning:
+    if warningstuple[2] is ProxyWarning:
         return _proxy_map[warningstuple[4]]
     else:
         return warningstuple
