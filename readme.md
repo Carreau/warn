@@ -15,7 +15,7 @@ This is an attempt to fix that.
 Explicit is better than implicit:
 
 ```
-from warn import path
+from warn import patch
 patch()
 
 # use the warning module as usual
