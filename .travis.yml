@@ -9,6 +9,7 @@ install:
 script:
     - cd docs
     - make html
+    - cd - 
 after_success:
     - doctr deploy
 env:
