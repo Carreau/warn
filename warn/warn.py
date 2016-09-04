@@ -22,7 +22,7 @@ def _filters_mutated():
 warnings._filters_mutated = _filters_mutated
 
 
-def new_warn_explicit(message, category, filename, lineno,
+def warn_explicit(message, category, filename, lineno,
                       module=None, registry=None, module_globals=None,
                       emit_module=None):
     lineno = int(lineno)
@@ -120,7 +120,7 @@ def _get_stack_frame(stacklevel):
     return frame
 
 
-def new_warn(message, category=None, stacklevel=1, emitstacklevel=1):
+def warn(message, category=None, stacklevel=1, emitstacklevel=1):
     """Issue a warning, or maybe ignore it or raise an exception."""
     # Check if message is already a Warning object
 
@@ -181,7 +181,7 @@ def new_warn(message, category=None, stacklevel=1, emitstacklevel=1):
         if not filename:
             filename = module
     registry = globals.setdefault("__warningregistry__", {})
-    new_warn_explicit(message, category, filename, lineno, module, registry,
+    warn_explicit(message, category, filename, lineno, module, registry,
                   globals, emit_module=emodule)
 
 _proxy_map = {}
@@ -208,7 +208,7 @@ def _get_proxy_filter(warningstuple):
 
 
 
-def newfilterwarnings(action, message="", category=Warning, module="", lineno=0,
+def filterwarnings(action, message="", category=Warning, module="", lineno=0,
                    append=False, emodule=""):
     """Insert an entry into the list of warnings filters (at the front).
 
@@ -253,9 +253,9 @@ class Patch:
             self._warn = warnings.warn
             self._filterwarnings = warnings.filterwarnings
 
-            warnings.warn_explicit = new_warn_explicit
-            warnings.warn = new_warn
-            warnings.filterwarnings = newfilterwarnings
+            warnings.warn_explicit = warn_explicit
+            warnings.warn = warn
+            warnings.filterwarnings = filterwarnings
         self._enter += 1
 
     def __enter__(self):
@@ -270,4 +270,6 @@ class Patch:
             # restore original stat
 
 
+
 patch = Patch()
+teardown = patch.__exit__
