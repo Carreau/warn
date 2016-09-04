@@ -1,6 +1,9 @@
-""" A module that replace the built-ins warning module wit a more flexible
+"""
+A module that replace the built-ins warning module wit a more flexible
 interface.
 
+In particular allow to filter warnings by emitter module and not only by
+modules that triggered the warning.
 """
 
 import warnings
@@ -25,6 +28,16 @@ warnings._filters_mutated = _filters_mutated
 def warn_explicit(message, category, filename, lineno,
                       module=None, registry=None, module_globals=None,
                       emit_module=None):
+    """
+    Low level implementation of the warning functionality.
+    Duplicate of the standard library `warnings.warn_explicit`,
+    except it accepts the following arguments:
+
+    `emit_module`: regular expression that should match the module the warnings
+                   are emitted from.
+
+
+    """
     lineno = int(lineno)
     if module is None:
         module = filename or "<unknown>"
@@ -105,6 +118,9 @@ def warn_explicit(message, category, filename, lineno,
 
 
 def _get_stack_frame(stacklevel):
+    """
+    utility functions to get a stackframe, skipping internal frames.
+    """
     stacklevel = stacklevel + 1
     if stacklevel <= 1 or _is_internal_frame(sys._getframe(1)):
         # If frame is too small to care or if the warning originated in
@@ -121,7 +137,14 @@ def _get_stack_frame(stacklevel):
 
 
 def warn(message, category=None, stacklevel=1, emitstacklevel=1):
-    """Issue a warning, or maybe ignore it or raise an exception."""
+    """Issue a warning, or maybe ignore it or raise an exception.
+
+    Duplicate of the standard library warn function except it takes the
+    following argument:
+
+    `emitstacklevel` : default to 1, number of stackframe to consider when
+    matching the module that emits this warning.
+    """
     # Check if message is already a Warning object
 
     ####################
@@ -219,6 +242,8 @@ def filterwarnings(action, message="", category=Warning, module="", lineno=0,
     'module' -- a regex that the module name must match
     'lineno' -- an integer line number, 0 matches all warnings
     'append' -- if true, append to the list of filters
+    'emodule' -- a regex that the module emitting the warning must match.
+
     """
     assert action in ("error", "ignore", "always", "default", "module",
                       "once"), "invalid action: %r" % (action,)
