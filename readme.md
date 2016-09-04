@@ -1,6 +1,8 @@
 # warn
 
-Better warnings. 
+Better warnings.
+
+See the full [documentation](https://carreau.github.io/warn).
 
 The Python standard [warning
 module](https://docs.python.org/3/library/warnings.html) is extremely good, and
@@ -33,23 +35,24 @@ All warnings from `matplotlib.pyplot` and its submodule will now be show by
 default, regardless of whether you trigger them directly, via pandas, seaborn,
 your own code...
 
-## Warning emitter, warning caller. 
+## Warning emitter, warning caller.
 
 Python warnings are a beautiful relative simple piece of code which is
-extremely powerful in the right hands once you learned how to use it. 
+extremely powerful in the right hands once you learned how to use it.
 
 It allows you to determine a posteriori whether you want a particular piece of
 code to trigger an exception, display a message to the user or simply do
-nothing. 
+nothing.
 
 It is difficult to show the full power of the waring with a simple piece of
 code, but in large code base, and once you start having several layer of
 dependency a parsimonious usage of warning , and in particular
-`DeprecationWarning` can make a large difference. 
+`DeprecationWarning` can make a large difference.
 
 ### Caller, vs Emitter
 
-Let's clear up some vocabulary first, to differentiate the warning "Caller" from the warning "Emitter"
+Let's clear up some vocabulary first, to differentiate the warning "Caller"
+from the warning "Emitter"
 
 ```python
 # file emitter.py
@@ -93,11 +96,11 @@ Change this to "error" in your test-suite, and filter by all your dependencies !
 The Python built-in module allow you to filter warning by caller (assuming the
 emitter have set the `stacklevel` options right, which is not always obvious to
 do). This is extremely useful when you are developing the caller; but not that
-much when you are developing the emitter. 
+much when you are developing the emitter.
 
 It is common for a caller to actually have many underlying library the can
 trigger warnings, or for a developer to only care about a subset of the emitter
-warnings. 
+warnings.
 
 Many libraries are going around this limitation by sub-classing Warnings; two
 example are
@@ -112,18 +115,13 @@ Because of Python default choice to filter out deprecation warnings, this also
 forced either inherit `UserWarning` (choice of matplotlib), which removes the
 semantic meaning of `DeprecationWarning` offered by Python or to inject a
 custom filter in the warnings filter module on import (choice of Sympy), which
-can lead to surprising behavior. 
-
-## Usage without patching 
-
-TODO. You should be able to use that in your own library without using `patch()`
-
+can lead to surprising behavior.
 
 ## Availability on Python 2
 
 I don't know if if works on Python 2; I don't really have the time to
 investigate; I don't particularly care a lot; but feel free to send a PR that
-ads support if necessary.
+ads support if necessary I would be happy to merge it.
 
 
 ## limitations
@@ -139,19 +137,18 @@ This does not work on packages that either :
 
 ## The Ugly
 
-- as Warnings filters _have to be 5 tuples with specific types_ this works by
-  shoving dummy instances in the filters list and using this as keys for a
-  proxy to lookup real filter keys. So worse case scenario the filter you
-  insert with this module will just be no-op. But you will incur a performance
-  penalty if you use this, especially if your codebase triggers a lot of
-  warnings.
+As Warnings filters _have to be 5 tuples with specific types_ this works by
+shoving dummy instances in the filters list and using this as keys for a proxy
+to lookup real filter keys. So worse case scenario the filter you insert with
+this module will just be no-op. But you will incur a performance penalty if you
+use this, especially if your codebase triggers a lot of warnings.
 
 ## Get the upstream
 
 I'd **love** feedback and have a nicer API to deal with warnings at CPython
 level in order to provide custom filters, and custom filters functions.
 
-# Aparté 
+# Aparté
 
 ## Good Deprecation Warnings.
 
@@ -181,4 +178,4 @@ DeprecationWarning: The 'constribule(message, recipient_id)' function of the
 ## Turn the DeprecationWarnings into error in your test-suite!
 
 At least  make them visible; at best once you fixed a deprecation warning turn
-**this specific one** into an error to not reproduce it. 
+**this specific one** into an error to not reproduce it.
