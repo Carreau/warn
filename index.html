@@ -41,9 +41,40 @@
             
   <div class="section" id="welcome-to-warn-s-documentation">
 <h1>Welcome to warn&#8217;s documentation!<a class="headerlink" href="#welcome-to-warn-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Warn is an experimental module which attempt to provide a more flexible and
+powerful control over python warnings. It mainly allow you to not only filter
+warnings depending on the module that trigger the warnings, but to filter
+depending on where the warning come from.</p>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 </div>
+<div class="section" id="direct-usage">
+<h2>Direct Usage<a class="headerlink" href="#direct-usage" title="Permalink to this headline">¶</a></h2>
+<p>Replace your usual import of <code class="docutils literal"><span class="pre">warnings.warn</span></code>, <code class="docutils literal"><span class="pre">warnings.warn_explicit</span></code>  and
+<code class="docutils literal"><span class="pre">warnings.filter</span></code> by the same import from <code class="docutils literal"><span class="pre">warn</span></code>, use them as usual except
+you have some extra options.</p>
+<p>To emit a warning:</p>
+<p>To add a filter a warning, use the <code class="docutils literal"><span class="pre">filter</span></code> function as usual:</p>
+<p>Using as long as you do not use <code class="docutils literal"><span class="pre">warn</span></code> specific option, using <code class="docutils literal"><span class="pre">warn.filter</span></code>
+should have the exact same effect as calling <code class="docutils literal"><span class="pre">warnings.filter</span></code> and affect all
+emitted warnings.</p>
+</div>
+</div>
+<div class="section" id="import-and-usage-styleguide">
+<h1>Import and usage Styleguide<a class="headerlink" href="#import-and-usage-styleguide" title="Permalink to this headline">¶</a></h1>
+<p>Because of the experimental nature of this module, there is some strange
+advised style guides. In particular you are encouraged to use the <em>fully
+qualified</em> name when calling import, both when using the <code class="docutils literal"><span class="pre">warn</span></code> module as
+well as when using the standard library <code class="docutils literal"><span class="pre">warnings</span></code> module. For example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">code</span><span class="p">::</span>
+</pre></div>
+</div>
+<blockquote>
+<div><p>import warnings</p>
+<p>warnings.warn(&#8216;This is a good way of using warning&#8217;)</p>
+<p>from warnings import warn</p>
+<p>warn(&#8216;Advance features of <cite>warn</cite> will not be available....&#8217;)</p>
+</div></blockquote>
 </div>
 <div class="section" id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
@@ -62,7 +93,11 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Welcome to warn&#8217;s documentation!</a></li>
+<li><a class="reference internal" href="#">Welcome to warn&#8217;s documentation!</a><ul>
+<li><a class="reference internal" href="#direct-usage">Direct Usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#import-and-usage-styleguide">Import and usage Styleguide</a></li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 <div class="relations">
