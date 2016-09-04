@@ -45,44 +45,145 @@
 powerful control over python warnings. It mainly allow you to not only filter
 warnings depending on the module that trigger the warnings, but to filter
 depending on where the warning come from.</p>
-<p>Contents:</p>
-<div class="toctree-wrapper compound">
-</div>
 <div class="section" id="direct-usage">
 <h2>Direct Usage<a class="headerlink" href="#direct-usage" title="Permalink to this headline">¶</a></h2>
 <p>Replace your usual import of <code class="docutils literal"><span class="pre">warnings.warn</span></code>, <code class="docutils literal"><span class="pre">warnings.warn_explicit</span></code>  and
 <code class="docutils literal"><span class="pre">warnings.filter</span></code> by the same import from <code class="docutils literal"><span class="pre">warn</span></code>, use them as usual except
 you have some extra options.</p>
 <p>To emit a warning:</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">warn</span>
+
+<span class="n">warn</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;I can use the as usual; this is awesone&quot;</span><span class="p">,</span>
+          <span class="ne">DeprecationWarning</span><span class="p">,</span>
+          <span class="n">stacklevel</span><span class="o">=</span><span class="mi">1</span> <span class="p">)</span>
+</pre></div>
+</div>
 <p>To add a filter a warning, use the <code class="docutils literal"><span class="pre">filter</span></code> function as usual:</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">warn</span>
+
+<span class="n">warn</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;__main__&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>Using as long as you do not use <code class="docutils literal"><span class="pre">warn</span></code> specific option, using <code class="docutils literal"><span class="pre">warn.filter</span></code>
 should have the exact same effect as calling <code class="docutils literal"><span class="pre">warnings.filter</span></code> and affect all
 emitted warnings.</p>
 </div>
+<div class="section" id="extra-functionality">
+<h2>Extra Functionality<a class="headerlink" href="#extra-functionality" title="Permalink to this headline">¶</a></h2>
+<p>The main extra functionality of the <cite>warn</cite> module is to be able to filter
+warnings not only by what _trigger_ them, but what _emit_ them. For example:</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="c1"># dependency.py</span>
+
+<span class="kn">import</span> <span class="nn">warn</span>
+
+<span class="k">def</span> <span class="nf">deprecated_function</span><span class="p">():</span>
+    <span class="c1"># the warning is emitted here</span>
+    <span class="n">warn</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;I am a deprecation warning&quot;</span><span class="p">,</span>
+                 <span class="ne">DeprecationWarning</span><span class="p">,</span>
+                 <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span>
+</pre></div>
+</div>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="c1"># downstream.py</span>
+
+<span class="kn">from</span> <span class="nn">dependency</span> <span class="k">import</span> <span class="n">deprecated_function</span>
+
+<span class="k">def</span> <span class="nf">feature</span><span class="p">():</span>
+    <span class="c1"># I will trigger the warning.</span>
+    <span class="n">deprecated_function</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>While the Python standard library only allow to filter by the module that
+_trigger_ the warning (above <code class="docutils literal"><span class="pre">downstream</span></code> module, and this only if
+<code class="docutils literal"><span class="pre">deprecated_function</span></code> set the <code class="docutils literal"><span class="pre">stacklevel</span></code> correctly, <code class="docutils literal"><span class="pre">warn</span></code> allows you
+to filter depending on the _emitter_ module (here <code class="docutils literal"><span class="pre">dependency</span></code>). To do so use
+the <code class="docutils literal"><span class="pre">emodule</span></code> keyword of <code class="docutils literal"><span class="pre">warn.filter</span></code>, which take a string or a regular
+expression:</p>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">warn</span>
+
+<span class="n">warn</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">emodule</span><span class="o">=</span><span class="s1">&#39;dependency&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="monkey-patching-the-standard-library">
+<h2>Monkey Patching the standard library<a class="headerlink" href="#monkey-patching-the-standard-library" title="Permalink to this headline">¶</a></h2>
+<p>The functionality of warn are usually only available if you are explicitly use
+the <code class="docutils literal"><span class="pre">warn</span></code> exposed functions. Though it might be useful occasionally to use
+the warn functionality with module that uses the standard library <code class="docutils literal"><span class="pre">warnings</span></code>.</p>
+<p>For this use case we provide the <code class="docutils literal"><span class="pre">patch</span></code> function that will replace
+monkey patch the standard library and automatically provide <code class="docutils literal"><span class="pre">warn</span></code>&#8216;s function
+to all modules that get imported <strong>after</strong> the patch have been applied.</p>
+<p>The <code class="docutils literal"><span class="pre">teardown</span></code> function is also provided and attempt to un-patch the
+<code class="docutils literal"><span class="pre">warnings</span></code>. Though any module that have retain a reference to the <code class="docutils literal"><span class="pre">warn</span></code>,
+<code class="docutils literal"><span class="pre">warn_explicit</span></code> and <code class="docutils literal"><span class="pre">filter</span></code> function will still be using the <code class="docutils literal"><span class="pre">warn</span></code>
+module functionalities.</p>
+<p><code class="docutils literal"><span class="pre">patch</span></code> and <code class="docutils literal"><span class="pre">teardown</span></code> keep a reference count of how many time each have
+been called to un-patch only when necessary, it should thus be safe to nest
+calls.</p>
+<p><code class="docutils literal"><span class="pre">patch</span></code> can also be used as a context manager to automatically un-patch on
+context manager exit.</p>
 </div>
 <div class="section" id="import-and-usage-styleguide">
-<h1>Import and usage Styleguide<a class="headerlink" href="#import-and-usage-styleguide" title="Permalink to this headline">¶</a></h1>
+<h2>Import and usage Styleguide<a class="headerlink" href="#import-and-usage-styleguide" title="Permalink to this headline">¶</a></h2>
 <p>Because of the experimental nature of this module, there is some strange
 advised style guides. In particular you are encouraged to use the <em>fully
 qualified</em> name when calling import, both when using the <code class="docutils literal"><span class="pre">warn</span></code> module as
 well as when using the standard library <code class="docutils literal"><span class="pre">warnings</span></code> module. For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="n">code</span><span class="p">::</span>
+<div class="code highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;This is a good way of using warning&#39;</span><span class="p">)</span>
+
+<span class="c1">########</span>
+
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
+
+<span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Advance features of `warn` will not be available....&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<blockquote>
-<div><p>import warnings</p>
-<p>warnings.warn(&#8216;This is a good way of using warning&#8217;)</p>
-<p>from warnings import warn</p>
-<p>warn(&#8216;Advance features of <cite>warn</cite> will not be available....&#8217;)</p>
-</div></blockquote>
+</div>
+<div class="section" id="monkey-patch-and-compiled-module">
+<h2>Monkey patch and compiled module<a class="headerlink" href="#monkey-patch-and-compiled-module" title="Permalink to this headline">¶</a></h2>
+<p>Compiles modules directly access the C-implementation of the <code class="docutils literal"><span class="pre">warning</span></code>
+module. Monkey Patching thus have no effect. We are aware of the limitation.</p>
+</div>
+<div class="section" id="how-does-it-work">
+<h2>How does it work<a class="headerlink" href="#how-does-it-work" title="Permalink to this headline">¶</a></h2>
+<p>Python&#8217;s warning filter are required to be fives-tuples with restricted types
+and values, in particular to be compatible with efficient c-implementation of
+the python standard lib.</p>
+<p>In order to interoperate with standard library <code class="docutils literal"><span class="pre">warnings</span></code>, when using
+specific <code class="docutils literal"><span class="pre">warn</span></code>&#8216;s functionality we actually inject a phony five-tuple which
+is no-op into <code class="docutils literal"><span class="pre">warnings.filters</span></code> and use it as a key for a proxy-dict that
+store the actual parameters.</p>
+<p>This allows complete backward compatibility with the warn module and ensure
+that in the worse case scenario, the rules you set using the <code class="docutils literal"><span class="pre">warn</span></code> module
+just have no-effects.</p>
+<p>We would really welcome any modification into Core Python that allow to have
+custom warning filters to make this less hackish.</p>
+</div>
+<div class="section" id="when-to-use-warn">
+<h2>When to use <code class="docutils literal"><span class="pre">warn</span></code><a class="headerlink" href="#when-to-use-warn" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal"><span class="pre">Warn</span></code> is still experimental and we do not yet recommend it for production.
+First as this is a pure python implementation, depending on the number of
+warning your code base have, you may notice a performance decrease.</p>
+<p><code class="docutils literal"><span class="pre">Warn</span></code> is extremely interesting for integration-testing and unit testing. We
+in particular recommend selectively enabling warning-as-error for all your
+direct dependencies. This is usually feasible with the default python warning
+module, except when warning are raised at import time, or if the underlying
+library does not make use of the <code class="docutils literal"><span class="pre">stacklevel</span></code> keyword. More generally you
+might want to consider enabling warning-as-error globally and silence them on a
+module-by-module basis if you decide they are false positive.</p>
+<p><code class="docutils literal"><span class="pre">Warn</span></code> is also extremely useful while developing locally to make sure you
+develop your code as early possible without using functionality that might be
+removed in the near future.</p>
 </div>
 <div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
 <li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
 <li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
 </ul>
+</div>
 </div>
 
 
@@ -95,10 +196,15 @@ well as when using the standard library <code class="docutils literal"><span cla
   <ul>
 <li><a class="reference internal" href="#">Welcome to warn&#8217;s documentation!</a><ul>
 <li><a class="reference internal" href="#direct-usage">Direct Usage</a></li>
+<li><a class="reference internal" href="#extra-functionality">Extra Functionality</a></li>
+<li><a class="reference internal" href="#monkey-patching-the-standard-library">Monkey Patching the standard library</a></li>
+<li><a class="reference internal" href="#import-and-usage-styleguide">Import and usage Styleguide</a></li>
+<li><a class="reference internal" href="#monkey-patch-and-compiled-module">Monkey patch and compiled module</a></li>
+<li><a class="reference internal" href="#how-does-it-work">How does it work</a></li>
+<li><a class="reference internal" href="#when-to-use-warn">When to use <code class="docutils literal"><span class="pre">warn</span></code></a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#import-and-usage-styleguide">Import and usage Styleguide</a></li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 <div class="relations">
 <h3>Related Topics</h3>
