@@ -3,7 +3,8 @@ python:
   - '3.5'
 
 install: 
-   - pip install doctr sphinx pytest
+   - pip install doctr sphinx pytest flit
+   - flit install .
 script:
     - py.test
     - cd docs
