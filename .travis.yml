@@ -4,7 +4,7 @@ python:
 
 install: 
    - pip install doctr sphinx pytest flit
-   - flit install .
+   - flit install
 script:
     - py.test
     - cd docs
