@@ -103,8 +103,6 @@ def warn_explicit(message, category, filename, lineno,
         registry[altkey] = 1
     elif action == "default":
         registry[key] = 1
-    elif action == "custom":
-        pass
     else:
         # Unrecognized actions are errors
         raise RuntimeError(
@@ -217,7 +215,8 @@ def _set_proxy_filter(warningstuple):
     if len(warningstuple) > 5:
         key = len(_proxy_map)+1
         _proxy_map[key] = warningstuple
-        return ('custom', re_matchall, ProxyWarning, re_matchall, key)
+        # always is pass-through further in the code.
+        return ('always', re_matchall, ProxyWarning, re_matchall, key)
     else:
         return warningstuple
 
