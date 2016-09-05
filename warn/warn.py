@@ -11,7 +11,7 @@ import sys
 import re
 
 from warnings import (_is_internal_frame, _next_external_frame,
-                      _filters_mutated, showwarning, defaultaction,
+                      _filters_mutated, defaultaction,
                       onceregistry)
 
 wfmu = _filters_mutated
@@ -110,11 +110,11 @@ def warn_explicit(message, category, filename, lineno,
         raise RuntimeError(
             "Unrecognized action (%r) in warnings.filters:\n %s" %
             (action, item))
-    if not callable(showwarning):
+    if not callable(warnings.showwarning):
         raise TypeError("warnings.showwarning() must be set to a "
                         "function or method")
     # Print message and context
-    showwarning(message, category, filename, lineno)
+    warnings.showwarning(message, category, filename, lineno)
 
 
 def _get_stack_frame(stacklevel):
