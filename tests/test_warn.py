@@ -1,6 +1,5 @@
 from warn import filterwarnings, patch
 patch()
-from warnings import simplefilter
 import warnings
 
 
@@ -10,12 +9,13 @@ import pytest
 
 
 
-def test_2():
+def test_0():
 
-    filterwarnings('default', category=DeprecationWarning,
-            emodule='examples.dependency')
 
     with pytest.warns(DeprecationWarning) as record:
+        warnings.simplefilter('ignore')
+        filterwarnings('default', category=DeprecationWarning,
+            emodule='examples.dependency')
         consumer()
 
     assert len(record) == 2
@@ -25,14 +25,20 @@ def test_2():
 
 def test_1():
 
-    filterwarnings('ignore', category=DeprecationWarning,
-            emodule='examples.dependency.bar')
 
     with pytest.warns(DeprecationWarning) as records:
+        warnings.simplefilter('ignore')
+        print('warnings.warn is ', warnings.warn.__module__)
+        print('filters', warnings.filters)
+        filterwarnings('default', category=DeprecationWarning,
+            emodule='examples.dependency')
+        filterwarnings('ignore', category=DeprecationWarning,
+            emodule='examples.dependency.bar')
         consumer()
+
     for r in records.list:
         print('Record :', r.message, 'In file', r.filename)
-    assert len(records) == 2
+    assert len(records) == 1
 
 
 
