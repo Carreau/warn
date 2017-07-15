@@ -11,7 +11,7 @@ script:
     - make html
     - cd - 
 after_success:
-    - doctr deploy --gh-pages-docs .
+    - doctr deploy .
 env:
   global:
     - secure: "IEa7hwF8KUW3qoQj0CluH+H1Ktsl0kIqf8yXoYQUNPlJMXe+61voTuegBx3ZRiFhzt9XRDcFqqgtAah/SI+FuPInujpo4gX5SG5Ra8DU4dyFRQLk/iBI7JEbsgOfJEyf8tcIbf8qOwRX/zSj+k4VrnqRjSUHCp/lw23EPVg9Rs1kg7rs/9DoK7sju5GMfqQnyEAD118EP74uXIc9CIYFADAPyxg6YaCdzphtcKa60Zpu5ffjAQ7u8u5qFlfQxVx6T78oFCo+Z364vWAQygZ3DUkgbE/q1VJ29IjdahMkuLQXp0tja7EvviJP+L+vz2SoPq5OAe1g7Sgoaw5VYT7rlRqLvAPCu29Zs49ByqsuGE0e3BzYMDI1TpF/VFaQUFBwPDTnSE3eKNo6SoWQMdSo1kA6Oltemgr1XpDFJWe3gkv/ZMQfbz7ovFa/sGTHFHPV4nHJHmlUNyVw41QBZtdkuHR8rGXYEMKfttU0MCLsR1y25C3KYBOzvAcB/1gNyYS6pOwpna3AsOZLlfS7GclQihEhIcfNJy3nYMTlUfYSANbvDDqQKndGOGM2KHQtzp5ry+WcM6jemy8gJMq7LQ9FZuYKMGm1uAne+MCccHILD7/ZczscrbwRJpi1y9wsb7QJ969kDAn7ywWIJK88NPr0BT28om2Ug+NGCaMWTdq9UAw="
